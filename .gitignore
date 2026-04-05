@@ -1,0 +1,29 @@
+# ── Secrets & credentials ─────────────────────────────────────────────
+# Only ignore JSON files at the repo root (credentials key files)
+/*.json
+server/.env
+
+# ── Excel source files ────────────────────────────────────────────────
+*.xlsx
+*.xls
+
+# ── Markdown docs (local reference only) ─────────────────────────────
+*.md
+
+# ── CSV / data files ──────────────────────────────────────────────────
+*.csv
+
+# ── Archives & misc ───────────────────────────────────────────────────
+*.zip
+*.txt
+
+# ── Old / draft HTML copies ───────────────────────────────────────────
+*copy*.html
+הערכת_עובד.html
+
+# ── Node ─────────────────────────────────────────────────────────────
+server/node_modules/
+server/*.log
+
+# ── macOS ─────────────────────────────────────────────────────────────
+.DS_Store

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לוח בקרה – הערכות עובדים</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      direction: rtl;
+      min-height: 100vh;
+    }
+
+    /* ── Login ── */
+    #loginOverlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #1a237e, #3949ab);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .login-box {
+      background: #fff; border-radius: 16px;
+      padding: 40px 48px; width: min(360px, 90vw);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;
+    }
+    .login-box img { height: 52px; margin-bottom: 18px; }
+    .login-box h2 { font-size: 1.2rem; color: #1a237e; margin-bottom: 4px; }
+    .login-box p  { font-size: 0.83rem; color: #888; margin-bottom: 22px; }
+    .login-box input {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid #c5cae9; border-radius: 8px;
+      font-size: 1rem; margin-bottom: 12px;
+      text-align: center; letter-spacing: 3px; direction: ltr;
+    }
+    .login-box input:focus { outline: none; border-color: #3949ab; box-shadow: 0 0 0 3px rgba(57,73,171,.12); }
+    .login-box button {
+      width: 100%; padding: 12px;
+      background: linear-gradient(135deg, #1a237e, #3949ab);
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+    }
+    .login-box button:hover { opacity: .9; }
+    .login-error { color: #c62828; font-size: .84rem; margin-top: 10px; min-height: 18px; }
+
+    /* ── Header ── */
+    #dashboard { display: none; }
+    header {
+      background: linear-gradient(135deg, #1a237e, #283593 60%, #3949ab);
+      color: #fff; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-logo { background: #fff; border-radius: 8px; padding: 5px 9px; display: flex; align-items: center; }
+    .header-logo img { height: 40px; }
+    header h1 { font-size: 1.1rem; font-weight: 700; }
+    header p  { font-size: .78rem; opacity: .8; margin-top: 1px; }
+    .btn-logout {
+      background: rgba(255,255,255,.15); color: #fff;
+      border: 1.5px solid rgba(255,255,255,.4);
+      padding: 6px 14px; border-radius: 6px; font-size: .84rem; cursor: pointer;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,.25); }
+
+    /* ── Main ── */
+    .main { padding: 20px 24px; max-width: 1200px; margin: 0 auto; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: #fff; padding: 12px 16px;
+      border-radius: 10px; border: 1.5px solid #e3e6f5; margin-bottom: 20px;
+    }
+    .filter-bar label { font-size: .82rem; font-weight: 600; color: #3949ab; white-space: nowrap; }
+    .filter-bar select {
+      padding: 7px 10px; border: 1.5px solid #c5cae9; border-radius: 6px;
+      font-size: .88rem; font-family: inherit; background: #fff; cursor: pointer; min-width: 160px;
+    }
+    .filter-bar select:focus { outline: none; border-color: #3949ab; }
+    .btn-refresh {
+      margin-right: auto; padding: 7px 14px;
+      background: #e8eaf6; color: #283593;
+      border: 1.5px solid #c5cae9; border-radius: 6px;
+      font-size: .84rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-refresh:hover { background: #c5cae9; }
+
+    /* ── Stat cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 22px;
+    }
+    .stat-card {
+      background: #fff; border-radius: 10px;
+      padding: 16px 14px; border: 1.5px solid #e3e6f5; text-align: center;
+    }
+    .stat-card .stat-value { font-size: 2rem; font-weight: 800; color: #1a237e; line-height: 1; margin-bottom: 4px; }
+    .stat-card .stat-label { font-size: .76rem; color: #666; font-weight: 600; }
+    .stat-card.green  .stat-value { color: #2e7d32; }
+    .stat-card.purple .stat-value { color: #6a1b9a; }
+    .stat-card.orange .stat-value { color: #e65100; }
+
+    /* ── Section title ── */
+    .section-title { font-size: .95rem; font-weight: 700; color: #283593; margin-bottom: 8px; padding-right: 2px; }
+
+    /* ── Evaluator summary ── */
+    .table-wrap {
+      background: #fff; border-radius: 10px;
+      border: 1.5px solid #e3e6f5; overflow: hidden; margin-bottom: 22px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+    thead tr { background: #e8eaf6; }
+    thead th {
+      padding: 9px 12px; text-align: right;
+      font-weight: 700; color: #283593;
+      border-bottom: 2px solid #c5cae9; white-space: nowrap;
+    }
+    tbody tr { cursor: pointer; transition: background .12s; }
+    tbody tr:nth-child(even) { background: #f9f9ff; }
+    tbody tr:hover { background: #dde1f5; }
+    tbody td { padding: 9px 12px; border-bottom: 1px solid #ececf5; vertical-align: middle; }
+
+    /* ── Submission cards (mobile) ── */
+    .cards-list { display: none; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+    .survey-card {
+      background: #fff; border-radius: 10px;
+      border: 1.5px solid #e3e6f5; padding: 14px 16px;
+      cursor: pointer; transition: box-shadow .15s, border-color .15s;
+    }
+    .survey-card:hover { border-color: #3949ab; box-shadow: 0 2px 12px rgba(57,73,171,.15); }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .card-emp { font-size: 1rem; font-weight: 700; color: #1a237e; }
+    .card-meta { font-size: .8rem; color: #666; margin-top: 2px; }
+    .card-bottom { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .card-date { font-size: .78rem; color: #999; margin-right: auto; }
+
+    /* ── Badges & chips ── */
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: .76rem; font-weight: 700; }
+    .badge-1 { background: #e3f2fd; color: #1565c0; }
+    .badge-2 { background: #f3e5f5; color: #6a1b9a; }
+    .badge-3 { background: #e8f5e9; color: #1b5e20; }
+    .score-chip {
+      display: inline-block; padding: 2px 9px;
+      border-radius: 12px; font-weight: 700; font-size: .83rem;
+      background: #e8eaf6; color: #1a237e;
+    }
+    .score-chip.high { background: #e8f5e9; color: #2e7d32; }
+    .score-chip.mid  { background: #fff8e1; color: #f57f17; }
+    .score-chip.low  { background: #fce4ec; color: #880e4f; }
+
+    .no-data { text-align: center; padding: 28px; color: #aaa; font-size: .9rem; }
+    .loading { text-align: center; padding: 40px; color: #3949ab; font-weight: 600; }
+
+    /* ── Bar chart ── */
+    .chart-card {
+      background: #fff; border-radius: 10px;
+      border: 1.5px solid #e3e6f5; padding: 18px 20px; margin-bottom: 22px;
+    }
+    .bar-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .bar-row:last-child { margin-bottom: 0; }
+    .bar-label {
+      width: 130px; flex-shrink: 0;
+      font-size: .82rem; font-weight: 600; color: #333;
+      text-align: right; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .bar-track {
+      flex: 1; height: 30px; background: #e8eaf6;
+      border-radius: 6px; overflow: hidden; position: relative;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 6px;
+      background: linear-gradient(90deg, #1a237e, #3949ab);
+      transition: width .5s ease; min-width: 4px;
+    }
+    .bar-num {
+      flex-shrink: 0; font-size: .88rem; font-weight: 800;
+      color: #1a237e; min-width: 28px; text-align: center;
+    }
+
+    /* ── Full report modal ── */
+    #modalBackdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 500;
+    }
+    #reportPanel {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: min(560px, 100vw);
+      background: #fff; z-index: 501;
+      overflow-y: auto; transform: translateX(-100%);
+      transition: transform .3s ease;
+      display: flex; flex-direction: column;
+    }
+    #reportPanel.open { transform: translateX(0); }
+    .report-header {
+      background: linear-gradient(135deg, #1a237e, #3949ab);
+      color: #fff; padding: 20px 20px 16px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .report-header h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
+    .report-header p  { font-size: .82rem; opacity: .85; }
+    .report-close {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(255,255,255,.2); border: none;
+      color: #fff; width: 30px; height: 30px; border-radius: 50%;
+      font-size: 1.1rem; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .report-close:hover { background: rgba(255,255,255,.35); }
+    .report-meta {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      padding: 16px 20px; background: #f5f7ff;
+      border-bottom: 1px solid #e3e6f5;
+    }
+    .meta-item label { font-size: .72rem; font-weight: 700; color: #3949ab; display: block; margin-bottom: 2px; }
+    .meta-item span  { font-size: .9rem; color: #1a1a2e; font-weight: 600; }
+    .report-body { padding: 16px 20px; flex: 1; }
+    .report-section { margin-bottom: 20px; }
+    .report-section-title {
+      font-size: .82rem; font-weight: 700; color: #fff;
+      background: linear-gradient(90deg, #283593, #3949ab);
+      padding: 6px 12px; border-radius: 6px; margin-bottom: 10px;
+    }
+    .question-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .question-text { flex: 1; font-size: .8rem; color: #333; line-height: 1.35; }
+    .score-bar-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .score-bar-bg {
+      width: 80px; height: 8px; background: #e8eaf6;
+      border-radius: 4px; overflow: hidden;
+    }
+    .score-bar-fill { height: 100%; border-radius: 4px; transition: width .4s; }
+    .score-val { font-size: .8rem; font-weight: 700; width: 28px; text-align: center; }
+    .na-val { font-size: .75rem; color: #999; width: 28px; text-align: center; }
+
+    .goal-block {
+      background: #f5fdf6; border: 1px solid #a5d6a7;
+      border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+    }
+    .goal-num { font-size: .72rem; font-weight: 700; color: #2e7d32; margin-bottom: 4px; }
+    .goal-block p { font-size: .82rem; color: #333; margin-bottom: 3px; }
+    .goal-block .goal-label { font-size: .72rem; color: #777; }
+
+    .note-block {
+      background: #faf5ff; border: 1px solid #ce93d8;
+      border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+    }
+    .note-block .note-title { font-size: .72rem; font-weight: 700; color: #6a1b9a; margin-bottom: 4px; }
+    .note-block p { font-size: .82rem; color: #333; line-height: 1.45; }
+
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      .main { padding: 14px 12px; }
+      header { padding: 12px 14px; }
+      header h1 { font-size: 1rem; }
+      .table-wrap table { display: none; }
+      .cards-list { display: flex; }
+      .filter-bar { gap: 8px; }
+      .filter-bar select { min-width: 130px; font-size: .82rem; }
+      #reportPanel { width: 100vw; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <img src="https://de-am.co.il/wp-content/uploads/2022/05/cropped-%D7%A2%D7%99%D7%A6%D7%95%D7%91-%D7%9C%D7%9C%D7%90-%D7%A9%D7%9D-1-1.png" alt="לוגו">
+    <h2>לוח בקרה – הערכות עובדים</h2>
+    <p>הכנס סיסמת מנהל להמשך</p>
+    <input type="password" id="passwordInput" placeholder="סיסמה"
+           onkeydown="if(event.key==='Enter') login()">
+    <button onclick="login()">כניסה</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <header>
+    <div class="header-left">
+      <div class="header-logo">
+        <img src="https://de-am.co.il/wp-content/uploads/2022/05/cropped-%D7%A2%D7%99%D7%A6%D7%95%D7%91-%D7%9C%D7%9C%D7%90-%D7%A9%D7%9D-1-1.png" alt="לוגו">
+      </div>
+      <div>
+        <h1>לוח בקרה – הערכות עובדים</h1>
+        <p>סיכום סקרים וסטטוס מילוי</p>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">יציאה</button>
+  </header>
+
+  <div class="main">
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <label>מעריך/ה:</label>
+      <select id="evalFilter" onchange="applyFilter()">
+        <option value="">הכל</option>
+      </select>
+      <label>שאלון:</label>
+      <select id="qFilter" onchange="applyFilter()">
+        <option value="">הכל</option>
+        <option value="שאלון 1">שאלון 1</option>
+        <option value="שאלון 2">שאלון 2</option>
+        <option value="שאלון 3">שאלון 3</option>
+      </select>
+      <button class="btn-refresh" onclick="loadData()">↻ רענן</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="loading">טוען נתונים...</div>
+    </div>
+
+    <!-- Bar chart -->
+    <div class="section-title">הערכות לפי מעריך/ה</div>
+    <div class="chart-card" id="chartWrap">
+      <div class="loading">טוען...</div>
+    </div>
+
+    <!-- Evaluator summary -->
+    <div class="section-title">סיכום לפי מעריך/ה</div>
+    <div class="table-wrap" id="evalSummaryWrap">
+      <div class="loading">טוען...</div>
+    </div>
+
+    <!-- All submissions – desktop table -->
+    <div class="section-title">כל ההערכות <span id="countLabel" style="font-weight:400;color:#666;font-size:.82rem"></span></div>
+    <div class="table-wrap" id="submissionsWrap">
+      <div class="loading">טוען...</div>
+    </div>
+
+    <!-- All submissions – mobile cards -->
+    <div class="cards-list" id="cardsList"></div>
+
+  </div>
+</div>
+
+<!-- Report modal -->
+<div id="modalBackdrop" onclick="closeReport()"></div>
+<div id="reportPanel">
+  <div class="report-header">
+    <button class="report-close" onclick="closeReport()">✕</button>
+    <h2 id="reportTitle">הערכת עובד</h2>
+    <p id="reportSubtitle"></p>
+  </div>
+  <div class="report-meta" id="reportMeta"></div>
+  <div class="report-body" id="reportBody"></div>
+</div>
+
+<script>
+  const API_BASE = window.location.origin;
+  let AUTH_TOKEN = sessionStorage.getItem('dash_token') || '';
+  let ALL_DATA   = [];
+  let HEADERS    = [];
+
+  // ── Report sections layout (0-indexed columns in allFields) ──────────
+  const REPORT_SECTIONS = [
+    { title: 'מקצוענות ומצוינות',                        cols: [6,7,8,9,10,11] },
+    { title: 'אחריות ומחויבות',                           cols: [12,13,14] },
+    { title: 'יחסי אנוש, עבודת צוות ועבודת ממשקים',      cols: [15,16,17] },
+    { title: 'יוזם ופועל באומץ ונחישות',                  cols: [18,19,20] },
+    { title: 'מנהיג שינוי, למידה והתחדשות',               cols: [21,22,23] },
+    { title: 'מנהל של אנשים: עבודת צוות, ניהול ממשקים',  cols: [24,25,26] },
+    { title: 'עבודה לצד לחימה',                           cols: [27] },
+  ];
+
+  // ── Login ─────────────────────────────────────────────────────────────
+  async function login() {
+    const pw  = document.getElementById('passwordInput').value;
+    const err = document.getElementById('loginError');
+    err.textContent = '';
+    try {
+      const res  = await fetch(`${API_BASE}/adboard/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'שגיאה');
+      AUTH_TOKEN = json.token;
+      sessionStorage.setItem('dash_token', AUTH_TOKEN);
+      showDashboard();
+    } catch (e) { err.textContent = e.message; }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('dash_token');
+    AUTH_TOKEN = '';
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('dashboard').style.display    = 'none';
+    document.getElementById('passwordInput').value = '';
+  }
+
+  function showDashboard() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    loadData();
+  }
+
+  // ── Load data ─────────────────────────────────────────────────────────
+  async function loadData() {
+    document.getElementById('statsGrid').innerHTML = '<div class="loading">טוען נתונים...</div>';
+    try {
+      const res  = await fetch(`${API_BASE}/api/dashboard`, {
+        headers: { Authorization: `Bearer ${AUTH_TOKEN}` },
+      });
+      if (res.status === 401) { logout(); return; }
+      const json = await res.json();
+      ALL_DATA = json.data    || [];
+      HEADERS  = json.headers || [];
+      populateFilters();
+      applyFilter();
+    } catch (e) {
+      document.getElementById('statsGrid').innerHTML =
+        `<div class="no-data">שגיאה: ${e.message}</div>`;
+    }
+  }
+
+  function populateFilters() {
+    const evaluators = [...new Set(ALL_DATA.map(r => r.evalName).filter(Boolean))].sort();
+    const sel = document.getElementById('evalFilter');
+    sel.innerHTML = '<option value="">הכל</option>';
+    evaluators.forEach(n => { const o = document.createElement('option'); o.value = o.textContent = n; sel.appendChild(o); });
+  }
+
+  // ── Filter & render ───────────────────────────────────────────────────
+  function applyFilter() {
+    const ef = document.getElementById('evalFilter').value;
+    const qf = document.getElementById('qFilter').value;
+    const filtered = ALL_DATA.filter(r =>
+      (!ef || r.evalName === ef) && (!qf || r.questionnaire === qf)
+    );
+    renderStats(filtered);
+    renderChart(filtered);
+    renderEvalSummary(filtered);
+    renderSubmissions(filtered);
+    renderCards(filtered);
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────
+  function renderStats(data) {
+    const scores = data.map(r => parseFloat(r.avgScore)).filter(n => !isNaN(n));
+    const avg    = scores.length ? (scores.reduce((a,b) => a+b,0)/scores.length).toFixed(2) : '–';
+    const byQ    = data.reduce((a,r) => { a[r.questionnaire||'–']=(a[r.questionnaire||'–']||0)+1; return a; }, {});
+    const evals  = new Set(data.map(r=>r.evalName).filter(Boolean)).size;
+
+    let html = `
+      <div class="stat-card"><div class="stat-value">${data.length}</div><div class="stat-label">סה"כ הערכות</div></div>
+      <div class="stat-card green"><div class="stat-value">${avg}</div><div class="stat-label">ציון ממוצע כללי</div></div>
+      <div class="stat-card purple"><div class="stat-value">${evals}</div><div class="stat-label">מעריכים פעילים</div></div>`;
+    Object.entries(byQ).sort().forEach(([k,v]) => {
+      html += `<div class="stat-card orange"><div class="stat-value">${v}</div><div class="stat-label">${k}</div></div>`;
+    });
+    document.getElementById('statsGrid').innerHTML = html;
+  }
+
+  // ── Bar chart ─────────────────────────────────────────────────────────
+  function renderChart(data) {
+    const el = document.getElementById('chartWrap');
+    if (!data.length) { el.innerHTML = '<div class="no-data">אין נתונים</div>'; return; }
+
+    const counts = {};
+    data.forEach(r => {
+      const name = r.evalName || 'לא ידוע';
+      counts[name] = (counts[name] || 0) + 1;
+    });
+
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const max    = sorted[0][1];
+
+    el.innerHTML = sorted.map(([name, count]) => {
+      const pct = Math.round((count / max) * 100);
+      return `<div class="bar-row">
+        <div class="bar-label" title="${name}">${name}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="bar-num">${count}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Evaluator summary ─────────────────────────────────────────────────
+  function renderEvalSummary(data) {
+    if (!data.length) { document.getElementById('evalSummaryWrap').innerHTML='<div class="no-data">אין נתונים</div>'; return; }
+    const byEval = {};
+    data.forEach(r => {
+      const n = r.evalName||'לא ידוע';
+      if (!byEval[n]) byEval[n]={count:0,scores:[]};
+      byEval[n].count++;
+      const s=parseFloat(r.avgScore); if(!isNaN(s)) byEval[n].scores.push(s);
+    });
+    const rows = Object.entries(byEval).sort((a,b)=>b[1].count-a[1].count).map(([name,d])=>{
+      const avg = d.scores.length ? (d.scores.reduce((a,b)=>a+b,0)/d.scores.length).toFixed(2) : '–';
+      return `<tr><td>${name}</td><td style="text-align:center"><strong>${d.count}</strong></td><td style="text-align:center">${scoreChip(avg)}</td></tr>`;
+    }).join('');
+    document.getElementById('evalSummaryWrap').innerHTML = `
+      <table>
+        <thead><tr><th>שם מעריך/ה</th><th style="text-align:center">הערכות</th><th style="text-align:center">ציון ממוצע</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // ── Submissions table (desktop) ───────────────────────────────────────
+  function renderSubmissions(data) {
+    document.getElementById('countLabel').textContent = `(${data.length})`;
+    if (!data.length) { document.getElementById('submissionsWrap').innerHTML='<div class="no-data">אין הערכות להצגה</div>'; return; }
+    const rows = [...data].reverse().map(r => `
+      <tr onclick="openReport(${r.id})">
+        <td>${r.timestamp}</td>
+        <td><strong>${r.empName}</strong></td>
+        <td>${r.evalName}</td>
+        <td>${qBadge(r.questionnaire)}</td>
+        <td style="text-align:center">${scoreChip(r.avgScore)}</td>
+        <td>${r.evalDate}</td>
+        <td style="text-align:center;color:#3949ab;font-size:.8rem">← פתח</td>
+      </tr>`).join('');
+    document.getElementById('submissionsWrap').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>חותמת זמן</th><th>שם עובד/ת</th><th>שם מעריך/ה</th>
+          <th>שאלון</th><th style="text-align:center">ציון</th><th>תאריך שיחה</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // ── Mobile cards ──────────────────────────────────────────────────────
+  function renderCards(data) {
+    const list = document.getElementById('cardsList');
+    if (!data.length) { list.innerHTML='<div class="no-data">אין הערכות להצגה</div>'; return; }
+    list.innerHTML = [...data].reverse().map(r => `
+      <div class="survey-card" onclick="openReport(${r.id})">
+        <div class="card-top">
+          <div>
+            <div class="card-emp">${r.empName}</div>
+            <div class="card-meta">מעריך/ה: ${r.evalName}</div>
+          </div>
+          ${scoreChip(r.avgScore)}
+        </div>
+        <div class="card-bottom">
+          ${qBadge(r.questionnaire)}
+          <span class="card-date">${r.evalDate || r.timestamp}</span>
+          <span style="font-size:.78rem;color:#3949ab;font-weight:600">לפרטים ←</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Full report modal ─────────────────────────────────────────────────
+  function openReport(id) {
+    const r = ALL_DATA.find(x => x.id === id);
+    if (!r) return;
+    const f = r.allFields || [];
+
+    document.getElementById('reportTitle').textContent    = `הערכת ${r.empName}`;
+    document.getElementById('reportSubtitle').textContent = `${r.questionnaire} | ${r.evalDate}`;
+
+    document.getElementById('reportMeta').innerHTML = `
+      <div class="meta-item"><label>שם עובד/ת</label><span>${r.empName}</span></div>
+      <div class="meta-item"><label>שם מעריך/ה</label><span>${r.evalName}</span></div>
+      <div class="meta-item"><label>תאריך שיחה</label><span>${r.evalDate}</span></div>
+      <div class="meta-item"><label>ציון ממוצע</label><span>${scoreChip(r.avgScore)}</span></div>
+      <div class="meta-item"><label>שאלון</label><span>${qBadge(r.questionnaire)}</span></div>
+      <div class="meta-item"><label>חותמת זמן</label><span style="font-size:.78rem">${r.timestamp}</span></div>`;
+
+    let body = '';
+
+    // Rating sections
+    REPORT_SECTIONS.forEach(sec => {
+      const hasData = sec.cols.some(c => f[c] && f[c] !== '');
+      if (!hasData) return;
+      body += `<div class="report-section"><div class="report-section-title">${sec.title}</div>`;
+      sec.cols.forEach(c => {
+        const label = HEADERS[c] ? HEADERS[c].replace(/^[^|]+\|\s*/, '') : `q${c-5}`;
+        const val   = f[c] || '';
+        if (val === '') return;
+        body += questionRow(label, val);
+      });
+      body += `</div>`;
+    });
+
+    // Goals
+    const goals = [
+      { num: 1, desc: f[28], target: f[29], date: f[30] },
+      { num: 2, desc: f[31], target: f[32], date: f[33] },
+      { num: 3, desc: f[34], target: f[35], date: f[36] },
+    ].filter(g => g.desc || g.target);
+
+    if (goals.length) {
+      body += `<div class="report-section"><div class="report-section-title">יעדים לשנה הבאה</div>`;
+      goals.forEach(g => {
+        body += `<div class="goal-block">
+          <div class="goal-num">יעד ${g.num}</div>
+          ${g.desc   ? `<p><span class="goal-label">תיאור: </span>${g.desc}</p>` : ''}
+          ${g.target ? `<p><span class="goal-label">יעד: </span>${g.target}</p>` : ''}
+          ${g.date   ? `<p><span class="goal-label">תאריך: </span>${g.date}</p>` : ''}
+        </div>`;
+      });
+      body += `</div>`;
+    }
+
+    // Notes
+    const notes = [
+      { title: 'יעד פיתוח אישי', val: f[37] },
+      { title: 'נקודות לחיזוק',  val: f[38] },
+      { title: 'נקודות לשיפור',  val: f[39] },
+    ].filter(n => n.val);
+
+    if (notes.length) {
+      body += `<div class="report-section"><div class="report-section-title">הערות וסיכומים</div>`;
+      notes.forEach(n => {
+        body += `<div class="note-block"><div class="note-title">${n.title}</div><p>${n.val}</p></div>`;
+      });
+      body += `</div>`;
+    }
+
+    document.getElementById('reportBody').innerHTML = body;
+
+    document.getElementById('modalBackdrop').style.display = 'block';
+    document.getElementById('reportPanel').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeReport() {
+    document.getElementById('modalBackdrop').style.display = 'none';
+    document.getElementById('reportPanel').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function questionRow(label, val) {
+    if (val === 'na' || val === 'N/A') {
+      return `<div class="question-row">
+        <div class="question-text">${label}</div>
+        <div class="score-bar-wrap"><span class="na-val">N/A</span></div>
+      </div>`;
+    }
+    const n   = parseFloat(val);
+    const pct = isNaN(n) ? 0 : (n / 5) * 100;
+    const color = n >= 4 ? '#2e7d32' : n >= 2.5 ? '#f57f17' : '#c62828';
+    return `<div class="question-row">
+      <div class="question-text">${label}</div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="score-val" style="color:${color}">${isNaN(n)?'–':n}</span>
+      </div>
+    </div>`;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+  function scoreChip(val) {
+    const n = parseFloat(val);
+    if (isNaN(n)) return `<span class="score-chip">–</span>`;
+    const cls = n >= 4 ? 'high' : n >= 2.5 ? 'mid' : 'low';
+    return `<span class="score-chip ${cls}">${n.toFixed ? n.toFixed(2) : n}</span>`;
+  }
+
+  function qBadge(name) {
+    const cls = name === 'שאלון 1' ? 'badge-1' : name === 'שאלון 2' ? 'badge-2' : 'badge-3';
+    return `<span class="badge ${cls}">${name || '–'}</span>`;
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────
+  if (AUTH_TOKEN) showDashboard();
+</script>
+</body>
+</html>

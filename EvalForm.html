@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>טופס הערכת עובד</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      direction: rtl;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%);
+      color: #fff;
+      padding: 24px 40px 20px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .header-logo {
+      flex-shrink: 0;
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .header-logo img {
+      height: 64px;
+      width: auto;
+      display: block;
+    }
+
+    .header-text h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .header-text p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    .form-body {
+      padding: 32px 40px;
+    }
+
+    /* ── Meta fields ── */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 36px;
+      padding: 20px;
+      background: #f5f7ff;
+      border-radius: 8px;
+      border: 1px solid #dde1f5;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #3949ab;
+      margin-bottom: 5px;
+    }
+
+    .field-group input {
+      width: 100%;
+      padding: 8px 11px;
+      border: 1.5px solid #c5cae9;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    .field-group input:focus {
+      outline: none;
+      border-color: #3949ab;
+      box-shadow: 0 0 0 3px rgba(57,73,171,0.12);
+    }
+
+    /* ── Section blocks ── */
+    .eval-section {
+      margin-bottom: 28px;
+      border: 1.5px solid #e3e6f5;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: linear-gradient(90deg, #283593 0%, #3949ab 100%);
+      color: #fff;
+      padding: 11px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    /* ── Rating table ── */
+    .rating-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .rating-table thead tr {
+      background: #e8eaf6;
+    }
+
+    .rating-table thead th {
+      padding: 9px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #283593;
+      text-align: center;
+      border-bottom: 2px solid #c5cae9;
+    }
+
+    .rating-table thead th:first-child {
+      text-align: right;
+      padding-right: 16px;
+    }
+
+    .rating-table tbody tr:nth-child(even) {
+      background: #f9f9ff;
+    }
+
+    .rating-table tbody tr:hover {
+      background: #eef0fb;
+    }
+
+    .rating-table td {
+      padding: 11px 10px;
+      font-size: 0.88rem;
+      border-bottom: 1px solid #ececf5;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .rating-table td:first-child {
+      text-align: right;
+      padding-right: 16px;
+      line-height: 1.45;
+      color: #222;
+    }
+
+    /* Radio buttons styled as pill chips */
+    .radio-group {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .radio-group input[type="radio"] { display: none; }
+
+    .radio-group label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid #c5cae9;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #555;
+      transition: all 0.15s;
+    }
+
+    .radio-group label:hover { border-color: #3949ab; color: #3949ab; }
+
+    .radio-group input[type="radio"]:checked + label {
+      background: #3949ab;
+      border-color: #3949ab;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(57,73,171,0.35);
+    }
+
+    /* N/A chip */
+    .radio-group input[type="radio"].na:checked + label {
+      background: #9e9e9e;
+      border-color: #9e9e9e;
+    }
+
+    /* ── Score summary ── */
+    .score-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #e8eaf6;
+      padding: 14px 20px;
+      border-top: 2px solid #c5cae9;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #283593;
+    }
+
+    #totalScore {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a237e;
+      background: #fff;
+      border-radius: 8px;
+      padding: 4px 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* ── Goals section ── */
+    .goals-section {
+      margin-bottom: 28px;
+      border: 1.5px solid #e3e6f5;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .goals-section .section-header {
+      background: linear-gradient(90deg, #1b5e20 0%, #2e7d32 100%);
+    }
+
+    .goals-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .goals-table thead tr { background: #e8f5e9; }
+
+    .goals-table thead th {
+      padding: 9px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1b5e20;
+      text-align: right;
+      border-bottom: 2px solid #a5d6a7;
+    }
+
+    .goals-table tbody tr:nth-child(even) { background: #f9fdf9; }
+
+    .goals-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e0f2e1;
+      vertical-align: middle;
+    }
+
+    .goals-table input[type="text"],
+    .goals-table input[type="date"] {
+      width: 100%;
+      padding: 6px 9px;
+      border: 1.5px solid #a5d6a7;
+      border-radius: 5px;
+      font-size: 0.88rem;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    .goals-table input:focus {
+      outline: none;
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46,125,50,0.12);
+    }
+
+    /* ── Personal dev goal & notes ── */
+    .notes-section {
+      margin-bottom: 28px;
+    }
+
+    .notes-block {
+      margin-bottom: 18px;
+      border: 1.5px solid #e3e6f5;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .notes-block .section-header {
+      background: linear-gradient(90deg, #4a148c 0%, #6a1b9a 100%);
+    }
+
+    .notes-block textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: none;
+      resize: vertical;
+      font-size: 0.92rem;
+      font-family: inherit;
+      min-height: 90px;
+      direction: rtl;
+      color: #222;
+      background: #fafafa;
+    }
+
+    .notes-block textarea:focus {
+      outline: none;
+      background: #fff;
+      box-shadow: inset 0 0 0 2px #6a1b9a;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin: 16px 0 28px;
+      font-size: 0.8rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #3949ab;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .legend-dot.na { background: #9e9e9e; }
+
+    /* ── Questionnaire selector ── */
+    .questionnaire-selector {
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: #1a237e;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .questionnaire-selector label {
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .questionnaire-selector select {
+      flex: 1;
+      padding: 9px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      background: #fff;
+      color: #1a237e;
+      font-weight: 600;
+      cursor: pointer;
+      appearance: auto;
+    }
+
+    .questionnaire-selector select:focus {
+      outline: 2px solid #7986cb;
+      outline-offset: 2px;
+    }
+
+    /* ── Submit ── */
+    .form-footer {
+      text-align: center;
+      padding: 10px 0 28px;
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #1a237e, #3949ab);
+      color: #fff;
+      border: none;
+      padding: 14px 50px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 14px rgba(26,35,126,0.3);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26,35,126,0.4);
+    }
+
+    .btn-submit:active:not(:disabled) { transform: translateY(0); }
+
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    /* ── Submission result messages ── */
+    .submit-result {
+      display: none;
+      margin: 0 0 20px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .submit-result.success {
+      background: #e8f5e9;
+      border: 1.5px solid #a5d6a7;
+      color: #1b5e20;
+    }
+
+    .submit-result.error {
+      background: #fce4ec;
+      border: 1.5px solid #f48fb1;
+      color: #880e4f;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page { box-shadow: none; margin: 0; border-radius: 0; }
+      .btn-submit { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="header-logo">
+      <img src="https://de-am.co.il/wp-content/uploads/2022/05/cropped-%D7%A2%D7%99%D7%A6%D7%95%D7%91-%D7%9C%D7%9C%D7%90-%D7%A9%D7%9D-1-1.png" alt="לוגו חברה">
+    </div>
+    <div class="header-text">
+      <h1>טופס הערכת עובד</h1>
+      <p>מלאו את כל השדות ודרגו כל היגד על פי סולם הציונים המפורט מטה</p>
+    </div>
+  </header>
+
+  <div class="form-body">
+    <form id="evalForm" onsubmit="handleSubmit(event)">
+
+      <!-- Questionnaire selector -->
+      <div class="questionnaire-selector">
+        <label for="questionnaireSelect">בחר שאלון:</label>
+        <select id="questionnaireSelect" name="questionnaire" onchange="switchQuestionnaire(this.value)">
+          <option value="1">שאלון 1</option>
+          <option value="2">שאלון 2</option>
+          <option value="3">שאלון 3</option>
+        </select>
+      </div>
+
+      <!-- Meta -->
+      <div class="meta-grid">
+        <div class="field-group">
+          <label for="empName">שם העובד/ת</label>
+          <input type="text" id="empName" name="empName" placeholder="הכנס שם עובד/ת" required>
+        </div>
+        <div class="field-group">
+          <label for="evalName">שם המעריך/ה</label>
+          <input type="text" id="evalName" name="evalName" placeholder="הכנס שם מעריך/ה" required>
+        </div>
+        <div class="field-group">
+          <label for="evalDate">תאריך השיחה</label>
+          <input type="date" id="evalDate" name="evalDate" required>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot">5</span> מצטיין</div>
+        <div class="legend-item"><span class="legend-dot">4</span> מבצע תפקידו מעל הנדרש</div>
+        <div class="legend-item"><span class="legend-dot">3</span> מבצע תפקידו כנדרש</div>
+        <div class="legend-item"><span class="legend-dot">2</span> מבצע תפקידו באופן חלקי</div>
+        <div class="legend-item"><span class="legend-dot">1</span> אינו מבצע תפקידו כנדרש</div>
+        <div class="legend-item"><span class="legend-dot na">N/A</span> לא רלוונטי</div>
+      </div>
+
+      <!-- Dynamic eval sections rendered by JS -->
+      <div id="eval-sections"></div>
+
+      <div class="score-bar">
+        <span>ציון הערכה כללי (ממוצע):</span>
+        <span id="totalScore">–</span>
+      </div>
+
+      <!-- Goals -->
+      <div class="goals-section" style="margin-top:28px;">
+        <div class="section-header">דיון וסיכומים לשנה הבאה – 3 יעדים לשנה הבאה</div>
+        <table class="goals-table">
+          <thead>
+            <tr>
+              <th style="width:5%">#</th>
+              <th style="width:50%">תיאור המשימה</th>
+              <th style="width:25%">יעד</th>
+              <th style="width:20%">תאריך לביצוע</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align:center;font-weight:700;color:#1b5e20;">1</td>
+              <td><input type="text" name="goal1_desc" placeholder="תיאור המשימה..." required></td>
+              <td><input type="text" name="goal1_target" placeholder="יעד מדיד..." required></td>
+              <td><input type="date" name="goal1_date" required></td>
+            </tr>
+            <tr>
+              <td style="text-align:center;font-weight:700;color:#1b5e20;">2</td>
+              <td><input type="text" name="goal2_desc" placeholder="תיאור המשימה..."></td>
+              <td><input type="text" name="goal2_target" placeholder="יעד מדיד..."></td>
+              <td><input type="date" name="goal2_date"></td>
+            </tr>
+            <tr>
+              <td style="text-align:center;font-weight:700;color:#1b5e20;">3</td>
+              <td><input type="text" name="goal3_desc" placeholder="תיאור המשימה..."></td>
+              <td><input type="text" name="goal3_target" placeholder="יעד מדיד..."></td>
+              <td><input type="date" name="goal3_date"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Personal dev goal -->
+      <div class="notes-section" style="margin-top:18px;">
+        <div class="notes-block">
+          <div class="section-header">יעד לפיתוח אישי</div>
+          <textarea name="personalDev" placeholder="פרט את יעד הפיתוח האישי של העובד/ת לשנה הקרובה..." required></textarea>
+        </div>
+
+        <div class="notes-block">
+          <div class="section-header">נקודות לחיזוק</div>
+          <textarea name="strengths" placeholder="תאר את נקודות החוזק של העובד/ת..." required></textarea>
+        </div>
+
+        <div class="notes-block">
+          <div class="section-header">נקודות לשיפור</div>
+          <textarea name="improvements" placeholder="תאר את תחומי השיפור של העובד/ת..." required></textarea>
+        </div>
+      </div>
+
+      <div id="submitResult" class="submit-result"></div>
+
+      <div class="form-footer">
+        <button type="submit" class="btn-submit" id="submitBtn">שמור הערכה</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  // ── Questionnaire data ──────────────────────────────────────────────
+  const SHARED_SECTIONS = [
+    {
+      title: 'מקצוענות ומצוינות',
+      questions: [
+        'בקיאות ושליטה בתחום המקצועי של התפקיד',
+        'מציג תפוקות עבודה לאורך זמן – כמות ואיכות',
+        'מקפיד על כללי איכות ובטיחות, ודיווח לממונים בעת בעיה',
+        'מוביל שיפור מתמיד, למידה, הפקת לקחים ופתרון בעיות',
+        'מבין את הסביבה העסקית, המורכבויות והפוטנציאל שלה (לקוחות, ספקים, רגולציה, תהליכים, ממשקים, מנועי צמיחה), וגוזר את המשמעויות הנכונות לתפקידו',
+        'עומד ביעדיו ובתכנית העבודה',
+      ]
+    },
+    {
+      title: 'אחריות ומחויבות (לתפקיד, ליחידה ולארגון)',
+      questions: [
+        'מעורב, אכפתי ומחויב להצלחת היחידה',
+        'מבצע את התפקיד תוך אחריות וערנות לתהליכי עבודה רחבים ("ראש גדול")',
+        'לויאליות לחברה וייצוג בצורה נאמנה אל מול הלקוחות והספקים',
+      ]
+    },
+    {
+      title: 'יחסי אנוש, עבודת צוות ועבודת ממשקים',
+      questions: [
+        'עובד בשיתוף פעולה ובאופן שירותי עם ממשקים פנימיים רלוונטים במטרה לקדם תהליכי עבודה',
+        'משתף פעולה עם עמיתיו, יוצר אווירה נעימה, מכבדת ומעודדת – "שחקן צוות"',
+        'מקבל משוב בפתיחות וחותר לשיפור',
+      ]
+    },
+    {
+      title: 'יוזם ופועל באומץ ונחישות: יוזמה, פרואקטיביות ואומץ ניהולי',
+      questions: [
+        'נגיש, פתוח וקשוב לשטח (גישת עשייה חיובית המוכוונת הבנת צרכי לקוחות פנימיים וחיצוניים)',
+        'פרואקטיבי ומעודד יוזמות, חדשנות ופרואקטיביות בקרב אנשיו',
+        'גורם לדברים לקרות: מגייס את בעלי העניין, נמדד בתוצאה, מקבל אחריות על התוצאות, עומד בלו"ז',
+      ]
+    },
+  ];
+
+  const QUESTIONNAIRES = {
+    '1': {
+      name: 'שאלון 1',
+      sections: [
+        ...SHARED_SECTIONS,
+        {
+          title: 'עבודה לצד לחימה',
+          questions: ['תפקוד אישי ומקצועי בזמן מלחמה']
+        },
+      ]
+    },
+    '2': {
+      name: 'שאלון 2',
+      sections: [
+        ...SHARED_SECTIONS,
+        {
+          title: 'עבודה לצד לחימה',
+          questions: ['תפקוד אישי ומקצועי בזמן מלחמה']
+        },
+      ]
+    },
+    '3': {
+      name: 'שאלון 3',
+      sections: [
+        ...SHARED_SECTIONS,
+        {
+          title: 'מנהיג שינוי, למידה והתחדשות',
+          questions: [
+            'מהווה דוגמא אישית, מזדהה ומייצג את ההתנהגויות הרצויות',
+            'מניע ומעצים את עובדיו',
+            'מאמן וחונך את עובדיו לשיפור יכולות אישיות וביצועים',
+          ]
+        },
+        {
+          title: 'מנהל של אנשים: עבודת צוות, ניהול ממשקים',
+          questions: [
+            'מגדיר יעד וכיוון ברור משותף, מקדם שיתופי פעולה ורותם את כל השותפים ובעלי העניין',
+            'מוכוון לניהול צוות מנהלים – מפתח ומקדם את אנשיו, מפגין מנהיגות, מייצר אווירה מקרבת ומאפשרת',
+            'חושב מהשטח, מחובר אליו, נוכח בו וקשוב לצרכיו',
+          ]
+        },
+        {
+          title: 'עבודה לצד לחימה',
+          questions: ['תפקוד אישי, ניהולי ומקצועי בזמן לחימה']
+        },
+      ]
+    },
+  };
+
+  // ── State ────────────────────────────────────────────────────────────
+  let CURRENT_Q_ID = '1';
+  let QUESTIONS = [];   // ['q1','q2', ...] updated on render
+
+  // ── Render ───────────────────────────────────────────────────────────
+  function renderQuestionnaire(id) {
+    CURRENT_Q_ID = id;
+    const qn = QUESTIONNAIRES[id];
+    QUESTIONS = [];
+    let qIndex = 0;
+    let html = '';
+
+    qn.sections.forEach(section => {
+      html += `<div class="eval-section">
+        <div class="section-header">${section.title}</div>
+        <table class="rating-table">
+          <thead><tr>
+            <th style="width:52%">היגד</th>
+            <th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>N/A</th>
+          </tr></thead>
+          <tbody>`;
+
+      section.questions.forEach(qText => {
+        qIndex++;
+        const qName = `q${qIndex}`;
+        QUESTIONS.push(qName);
+        html += `<tr>
+            <td>${qText}</td>
+            <td colspan="6"><div class="radio-group">
+              <input type="radio" name="${qName}" id="${qName}_5" value="5"><label for="${qName}_5">5</label>
+              <input type="radio" name="${qName}" id="${qName}_4" value="4"><label for="${qName}_4">4</label>
+              <input type="radio" name="${qName}" id="${qName}_3" value="3"><label for="${qName}_3">3</label>
+              <input type="radio" name="${qName}" id="${qName}_2" value="2"><label for="${qName}_2">2</label>
+              <input type="radio" name="${qName}" id="${qName}_1" value="1"><label for="${qName}_1">1</label>
+              <input type="radio" name="${qName}" id="${qName}_na" value="na" class="na"><label for="${qName}_na">N/A</label>
+            </div></td>
+          </tr>`;
+      });
+
+      html += `</tbody></table></div>`;
+    });
+
+    document.getElementById('eval-sections').innerHTML = html;
+
+    // Re-attach score listener
+    document.querySelectorAll('#eval-sections input[type="radio"]').forEach(r => {
+      r.addEventListener('change', calcScore);
+    });
+
+    calcScore();
+  }
+
+  function switchQuestionnaire(id) {
+    renderQuestionnaire(id);
+  }
+
+  // ── Score ─────────────────────────────────────────────────────────────
+  function calcScore() {
+    let sum = 0, count = 0;
+    QUESTIONS.forEach(q => {
+      const checked = document.querySelector(`input[name="${q}"]:checked`);
+      if (checked && checked.value !== 'na') {
+        sum += parseInt(checked.value);
+        count++;
+      }
+    });
+    document.getElementById('totalScore').textContent = count > 0 ? (sum / count).toFixed(2) : '–';
+  }
+
+  // ── Backend URL ──────────────────────────────────────────────────────
+  // Replace this with your Render deployment URL after deploying
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/submit'
+    : 'https://YOUR-APP.onrender.com/submit';
+
+  // ── Submit ────────────────────────────────────────────────────────────
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById('evalForm');
+    const data = new FormData(form);
+    const obj  = {};
+    data.forEach((v, k) => obj[k] = v);
+
+    // Validate all rating questions answered
+    const unanswered = QUESTIONS.filter(q => !document.querySelector(`input[name="${q}"]:checked`));
+    if (unanswered.length > 0) {
+      showResult('error', `יש ${unanswered.length} היגדים שטרם דורגו. אנא השלם את כל הדירוגים.`);
+      return;
+    }
+
+    // Collect radio values
+    QUESTIONS.forEach(q => {
+      const checked = document.querySelector(`input[name="${q}"]:checked`);
+      obj[q] = checked ? checked.value : '';
+    });
+
+    obj.avgScore = document.getElementById('totalScore').textContent;
+
+    // Loading state
+    const btn = document.getElementById('submitBtn');
+    btn.disabled    = true;
+    btn.textContent = '...שומר';
+    hideResult();
+
+    try {
+      const res = await fetch(API_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(obj),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || `שגיאת שרת (${res.status})`);
+      }
+
+      // Success
+      showResult('success', `✓ ההערכה של ${obj.empName} נשמרה בהצלחה בגיליון!`);
+      form.reset();
+      renderQuestionnaire(document.getElementById('questionnaireSelect').value);
+
+    } catch (err) {
+      // Failure — keep form data so user can retry
+      showResult('error', `שגיאה בשמירה: ${err.message}. אנא נסה שוב.`);
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = 'שמור הערכה';
+    }
+  }
+
+  function showResult(type, msg) {
+    const el = document.getElementById('submitResult');
+    el.className   = `submit-result ${type}`;
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hideResult() {
+    const el = document.getElementById('submitResult');
+    el.style.display = 'none';
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────
+  renderQuestionnaire('1');
+</script>
+</body>
+</html>
